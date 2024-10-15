@@ -4,6 +4,8 @@ This template should help get you started developing with Vue 3 and TypeScript i
 
 Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
 
+netstat -aon | findstr :8080
+taskkill /PID 13120 /F
 
 
 我需要做一个前端页面，首先点击添加配置项按钮，会出现一个国家下拉选择，一个用户类型的下拉选择，然后有三种操作选择，分别是：发送文字内容，发送文件，发送视频图片，选择其中一种操作以后需要输入字符串，由于可以有多个操作，所以可以多次选择输入。根据用户输入的内容，点击添加，即可添加到到config当中，其次添加完要在页面上显示用户刚刚添加这个配置项的内容。用户添加完多个配置项以后，点击一个按钮，点可以将config往另外一个另一个本地的js中进行插入。最后有一个按钮点击可以导出合并的js文件到对应文件夹中。
