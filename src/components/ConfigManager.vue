@@ -9,20 +9,14 @@
     <el-dialog v-model="showDialog" title="添加配置项" @closed="dialogClosed">
       <el-form>
         <el-form-item label="国家">
-          <el-select v-model="newItem.country" placeholder="请选择国家" :disabled="isCountrySelected"
-            @change="onCountryChange">
-            <el-option label="AM" value="AM"></el-option>
-            <el-option label="MXG" value="MXG"></el-option>
-          </el-select>
+          <el-input v-model="newItem.country" placeholder="请输入国家前缀"
+            :class="{ 'is-error': countryParamError }" :disabled="isCountryInputed"></el-input>
         </el-form-item>
         <el-form-item label="用户类型">
-          <el-select v-model="newItem.userType" placeholder="请选择用户类型" :disabled="isUserTypeSelected"
-            @change="onUserTypeChange">
-            <el-option label="a" value="a"></el-option>
-            <el-option label="b" value="b"></el-option>
-          </el-select>
+          <el-input v-model="newItem.userType" placeholder="请输入用户类型前缀"
+            :class="{ 'is-error': userTypeParamError }" :disabled="isUserTypeInputed"></el-input>
         </el-form-item>
-        <div :style="{ marginBottom: '18px' }"><el-text class="mx-1" type="primary">添加操作</el-text>></div>
+        <div :style="{ marginBottom: '18px' }"><el-text class="mx-1" type="primary">添加操作</el-text></div>
         <el-form-item label="操作">
           <el-select v-model="selectedAction" placeholder="请选择操作" @change="() => {
             isSelectAction = true
@@ -145,6 +139,8 @@ const newItem = ref<{ country: string; userType: string; actions: Action[] }>({ 
 const selectedAction = ref<string>('');
 const isSelectAction = ref<boolean>(false)
 const actionParam = ref<string>('');
+const countryParamError = ref(false);
+const userTypeParamError = ref(false);
 const actionParamError = ref(false);
 const config = ref<Config>({});
 const templateContent = ref<string | null>(null);
@@ -152,8 +148,8 @@ const mergedContent = ref<string | null>(null);
 const filename = ref<string>('')
 
 // 下拉选择禁用状态
-const isCountrySelected = ref(false);
-const isUserTypeSelected = ref(false);
+const isCountryInputed = ref(false);
+const isUserTypeInputed = ref(false);
 
 const customLabel = computed(() => {
   if (selectedAction.value === 'sendMessage') {
@@ -165,27 +161,28 @@ const customLabel = computed(() => {
   }
 });
 
-const onCountryChange = () => {
-  console.log('newItem.value', newItem.value)
-  if (newItem.value.country) {
-    // console.log("国家禁用")
-    isCountrySelected.value = true; // 禁用国家选择
-  }
-};
-
-const onUserTypeChange = () => {
-
-  if (newItem.value.userType) {
-    // console.log("用户类型禁用")
-    isUserTypeSelected.value = true; // 禁用用户类型选择
-  }
-};
 
 const addAction = () => {
   if (!actionParam.value) {
     actionParamError.value = true; // 参数必填校验
-  } else {
+  }
+  if (!newItem.value.country) {
+    countryParamError.value = true; // 参数必填校验
+  }
+  if (!newItem.value.userType) {
+    userTypeParamError.value = true; // 参数必填校验
+  }
+
+  if (actionParam.value && newItem.value.country && newItem.value.userType) {
+    // 添加动作的时候禁用国家和用户 输入
+    isCountryInputed.value = true;
+    isUserTypeInputed.value = true;
+
+
+    countryParamError.value = false;
+    userTypeParamError.value = false;
     actionParamError.value = false;
+    
     newItem.value.actions.push({
       func: selectedAction.value as 'sendMessage' | 'sendFile' | 'sendPicture',
       params: [actionParam.value]
@@ -197,8 +194,8 @@ const addAction = () => {
 };
 
 const dialogClosed = () => {
-  isCountrySelected.value = false;
-  isUserTypeSelected.value = false;
+  isCountryInputed.value = false;
+  isUserTypeInputed.value = false;
   newItem.value = { country: '', userType: '', actions: [] }
 }
 
@@ -214,8 +211,8 @@ const addConfigItem = () => {
     config.value[country][userType].push(...actions);
     // 重置对话框内容和禁用状态
     newItem.value = { country: '', userType: '', actions: [] };
-    isCountrySelected.value = false;
-    isUserTypeSelected.value = false;
+    isCountryInputed.value = false;
+    isUserTypeInputed.value = false;
     showDialog.value = false; // 关闭对话框
   } else {
     ElMessage({
@@ -245,19 +242,6 @@ const deleteUserType = (country: string, userType: string, actionIndex: number) 
     }
   }
 };
-
-// 使用 Element Plus 的上传组件，自定义上传逻辑
-// const handleUpload = (uploadFile: any) => {
-//   console.log(123)
-//   const file = uploadFile.file;
-//   const reader = new FileReader();
-
-//   reader.onload = (e) => {
-//     templateContent.value = e.target?.result as string;
-//     console.log(templateContent.value)
-//   };
-//   reader.readAsText(file);
-// };
 
 // 插入配置到模板文件
 const insertConfigIntoTemplate = () => {
