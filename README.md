@@ -17,7 +17,7 @@ taskkill /PID 13120 /F
  -->
 <!-- config的格式参考如下 -->
 
-```json
+```js
 const config = {
 // 国家
   "AM": {
